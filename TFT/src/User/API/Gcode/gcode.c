@@ -58,7 +58,10 @@ char *request_M20(char *nextdir)
   strcpy(requestCommandInfo.stopMagic, "}");
   strcpy(requestCommandInfo.errorMagic, "Error");
   resetRequestCommandInfo();
+  mustStoreCmd("\n");
   mustStoreCmd(requestCommandInfo.command);
+  // in case of some issue of user srs5694, I store a extra \n
+  mustStoreCmd("\n");
   // Wait for response
   WaitingGcodeResponse = 1;
   while ((!requestCommandInfo.done) && (timeout > 0x00))
@@ -171,7 +174,10 @@ char *request_M20_macros(char *nextdir)
   strcpy(requestCommandInfo.stopMagic, "}");
   strcpy(requestCommandInfo.errorMagic, "Error");
   resetRequestCommandInfo();
+  mustStoreCmd("\n");
   mustStoreCmd(requestCommandInfo.command);
+  // in case of some issue of user srs5694, I store a extra \n
+  mustStoreCmd("\n");
   // Wait for response
   WaitingGcodeResponse = 1;
   while ((!requestCommandInfo.done) && (timeout > 0x00))
