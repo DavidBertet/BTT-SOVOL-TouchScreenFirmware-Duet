@@ -3,8 +3,31 @@
 
 REQUEST_COMMAND_INFO requestCommandInfo;
 bool WaitingGcodeResponse = 0;
+u16 find_index;
 
-static void resetRequestCommandInfo(void)
+static bool
+find_part(const char *str)
+{
+  // u16 i;
+  u16 y;
+  for (find_index = 0; find_index < CMD_MAX_REV && requestCommandInfo.cmd_rev_buf[find_index] != 0; find_index++)
+  {
+    for (y = 0; str[y] != 0 && requestCommandInfo.cmd_rev_buf[find_index + 1] != 0 && requestCommandInfo.cmd_rev_buf[find_index + 1] == str[y]; y++)
+    {
+      /* code */
+    }
+    if (str[y] == 0)
+    {
+      find_index += y;
+      return true;
+    }
+    /* code */
+  }
+  return false;
+}
+
+static void
+resetRequestCommandInfo(void)
 {
   requestCommandInfo.cmd_rev_buf = malloc(CMD_MAX_REV);
   while (!requestCommandInfo.cmd_rev_buf)
@@ -42,7 +65,8 @@ void clearRequestCommandInfo(void)
 */
 char *request_M20(char *nextdir)
 {
-  uint32_t timeout = ((uint32_t)0x000FFFFF);
+  // uint32_t timeout = ((uint32_t)0x000FFFFF);
+  infoHost.pauseGantry = true;
   if (nextdir == NULL)
   {
     strcpy(requestCommandInfo.command, "M20 S2\n\n");
@@ -51,17 +75,10 @@ char *request_M20(char *nextdir)
   {
     sprintf(requestCommandInfo.command, "M20 S2 P\"/gcodes/%s\"\n\n", nextdir);
   }
-
-  //  strcpy(requestCommandInfo.startMagic, "{\"dir\"");
-  strcpy(requestCommandInfo.startMagic, "{");
-  //strcpy(requestCommandInfo.stopMagic, ",\"err\"");
-  strcpy(requestCommandInfo.stopMagic, "}");
-  strcpy(requestCommandInfo.errorMagic, "Error");
+  send_and_wait_M20();
+  /*
   resetRequestCommandInfo();
-  mustStoreCmd("\n");
   mustStoreCmd(requestCommandInfo.command);
-  // in case of some issue of user srs5694, I store a extra \n
-  mustStoreCmd("\n");
   // Wait for response
   WaitingGcodeResponse = 1;
   while ((!requestCommandInfo.done) && (timeout > 0x00))
@@ -75,6 +92,8 @@ char *request_M20(char *nextdir)
     clearRequestCommandInfo();
   }
   //clearRequestCommandInfo(); //shall be call after copying the buffer ...
+  */
+  infoHost.pauseGantry = false;
   return requestCommandInfo.cmd_rev_buf;
 }
 
@@ -158,38 +177,139 @@ bool request_M25(void)
   return true;
 }
 
+void waitPortReady(void)
+{
+  TCHAR command[30];
+  sprintf(command, "Wait for Port");
+  uint32_t timeout = ((uint32_t)0x000FFFFF);
+  while ((requestCommandInfo.inWaitResponse || requestCommandInfo.inResponse || infoHost.wait || dmaL1NotEmpty(SERIAL_PORT)) && (timeout > 0x00))
+  {
+    GUI_DispString(5, 10, (u8 *)"Wait for Port");
+    if (dmaL1NotEmpty(SERIAL_PORT) && !infoHost.rx_ok[SERIAL_PORT])
+      infoHost.rx_ok[SERIAL_PORT] = true;
+    loopBackEnd();
+    timeout--;
+  }
+}
 char *request_M20_macros(char *nextdir)
 {
-  uint32_t timeout = ((uint32_t)0x000FFFFF);
+  // uint32_t timeout = ((uint32_t)0x000FFFFF);
+  infoHost.pauseGantry = true;
+  // waitPortReady();
+  clearRequestCommandInfo();
   if ((nextdir == NULL) || strchr(nextdir, '/') == NULL)
   {
-    strcpy(requestCommandInfo.command, "M20 S2 P\"/macros/\"\n\n");
+    strcpy(requestCommandInfo.command, "M20 S2 P\"/macros\"\n");
   }
   else
   {
     sprintf(requestCommandInfo.command, "M20 S2 P\"/macros/\"%s\n\n", nextdir);
   }
+  send_and_wait_M20();
+  /*
+  resetRequestCommandInfo();
+  mustStoreCmd(requestCommandInfo.command);
+  while (strstr(requestCommandInfo.cmd_rev_buf, "dir") == NULL) //(!find_part("dir"))
+  {
+    timeout = ((uint32_t)0x0000FFFF);
+    WaitingGcodeResponse = 1;
+    while ((!requestCommandInfo.done) && (timeout > 0x00))
+    {
+      loopBackEnd();
+      timeout--;
+    }
+    WaitingGcodeResponse = 0;
+    if (timeout <= 0x00)
+    {
+      uint16_t wIndex = (dmaL1Data[SERIAL_PORT].wIndex == 0) ? DMA_TRANS_LEN : dmaL1Data[SERIAL_PORT].wIndex;
+      if (dmaL1Data[SERIAL_PORT].cache[wIndex - 1] == '}') // \n fehlt
+      {
+        BUZZER_PLAY(sound_notify); // for DEBUG
+        dmaL1Data[SERIAL_PORT].cache[wIndex] = '\n';
+        dmaL1Data[SERIAL_PORT].cache[wIndex + 1] = 0;
+        dmaL1Data[SERIAL_PORT].wIndex++;
+        infoHost.rx_ok[SERIAL_PORT] = true;
+      }
+    }
+    if (dmaL1NotEmpty(SERIAL_PORT) && !infoHost.rx_ok[SERIAL_PORT])
+    {
+      infoHost.rx_ok[SERIAL_PORT] = true;
+    }
+    if (strstr(requestCommandInfo.cmd_rev_buf, "dir") == NULL)
+    {
+      clearRequestCommandInfo();
+      resetRequestCommandInfo();
+      mustStoreCmd("\n");
+    }
+  }
+  */
+  infoHost.pauseGantry = false;
+  GUI_Clear(BACKGROUND_COLOR);
+  return requestCommandInfo.cmd_rev_buf;
+}
+
+void send_and_wait_M20(void)
+{
+  uint32_t timeout = ((uint32_t)0x000FFFFF);
+  uint32_t waitloops = ((uint32_t)0x00000006);
 
   strcpy(requestCommandInfo.startMagic, "{");
   strcpy(requestCommandInfo.stopMagic, "}");
-  strcpy(requestCommandInfo.errorMagic, "Error");
+  strcpy(requestCommandInfo.errorMagic, "Error:");
+
   resetRequestCommandInfo();
-  mustStoreCmd("\n");
   mustStoreCmd(requestCommandInfo.command);
-  // in case of some issue of user srs5694, I store a extra \n
-  mustStoreCmd("\n");
+  while ((strstr(requestCommandInfo.cmd_rev_buf, "dir") == NULL) && (waitloops > 0x00)) //(!find_part("dir"))
+  {
+    waitloops--;
+    timeout = ((uint32_t)0x0000FFFF);
+    WaitingGcodeResponse = 1;
+    while ((!requestCommandInfo.done) && (timeout > 0x00))
+    {
+      loopBackEnd();
+      timeout--;
+    }
+    WaitingGcodeResponse = 0;
+    if (timeout <= 0x00)
+    {
+      uint16_t wIndex = (dmaL1Data[SERIAL_PORT].wIndex == 0) ? DMA_TRANS_LEN : dmaL1Data[SERIAL_PORT].wIndex;
+      if (dmaL1Data[SERIAL_PORT].cache[wIndex - 1] == '}') // \n fehlt
+      {
+        BUZZER_PLAY(sound_notify); // for DEBUG
+        dmaL1Data[SERIAL_PORT].cache[wIndex] = '\n';
+        dmaL1Data[SERIAL_PORT].cache[wIndex + 1] = 0;
+        dmaL1Data[SERIAL_PORT].wIndex++;
+        infoHost.rx_ok[SERIAL_PORT] = true;
+      }
+    }
+    if (dmaL1NotEmpty(SERIAL_PORT) && !infoHost.rx_ok[SERIAL_PORT])
+    {
+      infoHost.rx_ok[SERIAL_PORT] = true;
+    }
+    if (strstr(requestCommandInfo.cmd_rev_buf, "dir") == NULL)
+    {
+      clearRequestCommandInfo();
+      resetRequestCommandInfo();
+      mustStoreCmd("\n");
+    }
+  }
+  return; //  requestCommandInfo.cmd_rev_buf;
+}
+
+bool request_M98(char *filename)
+{
+  sprintf(requestCommandInfo.command, "M98 P/macros/%s\n", filename);
+  strcpy(requestCommandInfo.startMagic, "{"); //a character that is in the line to be treated
+  strcpy(requestCommandInfo.stopMagic, "}");
+  strcpy(requestCommandInfo.errorMagic, "Warning:");
+  resetRequestCommandInfo();
+  mustStoreCmd(requestCommandInfo.command);
   // Wait for response
   WaitingGcodeResponse = 1;
-  while ((!requestCommandInfo.done) && (timeout > 0x00))
+  while (!requestCommandInfo.done)
   {
     loopProcess();
-    timeout--;
   }
   WaitingGcodeResponse = 0;
-  if (timeout <= 0x00)
-  {
-    clearRequestCommandInfo();
-  }
-  //clearRequestCommandInfo(); //shall be call after copying the buffer ...
-  return requestCommandInfo.cmd_rev_buf;
+  return true;
 }

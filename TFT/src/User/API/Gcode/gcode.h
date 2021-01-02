@@ -28,4 +28,5 @@ bool request_M524(void);
 bool request_M24(int pos);
 bool request_M23(char *filename);
 
+bool request_M98(char *filename);
 #endif

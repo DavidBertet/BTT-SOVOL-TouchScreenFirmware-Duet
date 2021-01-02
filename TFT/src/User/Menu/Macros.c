@@ -45,7 +45,7 @@ const int16_t labelMacroError[] = {LABEL_READ_TFTSD_ERROR, LABEL_READ_U_DISK_ERR
 
 /************************************************************************/
 
-bool request_M98(char *filename)
+bool request_M988(char *filename)
 {
   char command[100];
   sprintf(command, "M98 P/macros/%s\n", filename);
@@ -116,6 +116,8 @@ bool scanMacroFilesFs(void)
   //
   strcpy(macroFile.title, '/');
   char *ret = request_M20_macros(macroFile.title);
+  if (strlen(ret) <= 3)
+    return false;
   char *data = malloc(strlen(ret) + 1);
   strcpy(data, ret);
 

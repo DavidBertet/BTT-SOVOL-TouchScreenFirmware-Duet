@@ -107,6 +107,8 @@ typedef struct
   bool rx_ok[_UART_CNT]; //Whether receive Marlin's response or get Gcode by other UART(ESP3D/OctoPrint)
   bool connected;        //Whether have connected to Marlin
   bool printing;         //Whether the host is busy in printing execution. ( USB serial printing and GCODE print from onboard)
+  bool pauseGantry;
+  bool update_waiting;
 } HOST;
 
 extern HOST infoHost;

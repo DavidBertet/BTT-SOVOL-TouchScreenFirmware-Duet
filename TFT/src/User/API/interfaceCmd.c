@@ -135,7 +135,7 @@ bool moveCacheToCmd(void)
   return true;
 }
 
-// Clear all gcode cmd in infoCmd queue for abort printing.
+// Clear all gcode cmd in infoCmd queue for abort printing. 
 void clearCmdQueue(void)
 {
   infoCmd.count = infoCmd.index_w = infoCmd.index_r =0;

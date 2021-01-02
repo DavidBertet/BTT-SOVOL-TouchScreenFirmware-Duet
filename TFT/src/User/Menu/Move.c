@@ -177,11 +177,11 @@ void menuMove(void)
   mustStoreCmd("G90\n");
 }
 
-void update_gantry(void)
+void update_gantry(void) //
 {
   if (OS_GetTimeMs() > nextTime)
   {
-    if (infoHost.connected == true && infoHost.wait == false){
+    if (infoHost.connected == true && infoHost.wait == false && infoHost.pauseGantry == false){
       storeCmd("M408 S0\n");
     }
     drawXYZ();
