@@ -1,6 +1,8 @@
 <!-- omit in toc -->
 # Modification of the original firmware for working with the RepRapFirmware 3 through the AUX
-### Tested with firmware [Experimental RepRapFirmware 3.01 RC6 Port for LPC](https://github.com/gloomyandy/RepRapFirmware/releases/tag/LPC_RRFv3.01RC6)
+### Tested with firmware [RepRapFirmware 3.2-RC2 Port for LPC and STM32F4 (v3.2-RC2_2)](https://github.com/gloomyandy/RepRapFirmware/releases/tag/v3.2-RC2_2)
+
+## please read [README_RT3D.md](https://github.com/Thro42/BTT-SOVOL-TouchScreenFirmware-Duet/blob/master/README_RT3D.md) for what I have optomized.
 
 In the config. file it is necessary to add:
 <code>M575 P1 S3 B57600</code>
@@ -17,13 +19,14 @@ Firmware for BigTreeTech's dual-mode touchscreen 3D printer controllers
 
 <!-- omit in toc -->
 ## Table of Contents
-- [Menus and Themes](#menus-and-themes)
-- [Update TFT Firmware](#update-tft-firmware)
-- [Customization](#customization)
-  - [Bootscreen and Icons](#bootscreen-and-icons)
-  - [Firmware](#firmware)
-- [Troubleshooting](#troubleshooting)
-- [Version History](#version-history)
+- [BigTreeTech Touchscreen Firmware](#bigtreetech-touchscreen-firmware)
+  - [Menus and Themes](#menus-and-themes)
+  - [Update TFT Firmware](#update-tft-firmware)
+  - [Customization](#customization)
+    - [Bootscreen and Icons](#bootscreen-and-icons)
+    - [Firmware](#firmware)
+  - [Troubleshooting](#troubleshooting)
+  - [Version History](#version-history)
 
 ## Menus and Themes
 

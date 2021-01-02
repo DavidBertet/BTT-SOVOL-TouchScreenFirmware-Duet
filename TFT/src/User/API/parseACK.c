@@ -191,14 +191,14 @@ void parseACK(void)
       infoHost.update_waiting = false;
       avoid_terminal = infoSettings.terminalACK;
       BUZZER_PLAY(sound_notify);
-      statusScreen_setMsg((u8 *)echomagic, (u8 *)dmaL2Cache);
+      statusScreen_setMsg((u8 *)warningmagic, (u8 *)dmaL2Cache);
     }
     if (ack_seen("Error"))
     {
       infoHost.wait = false;
       infoHost.update_waiting = false;
       avoid_terminal = infoSettings.terminalACK;
-      BUZZER_PLAY(sound_notify);
+      BUZZER_PLAY(sound_error);
       statusScreen_setMsg((u8 *)errormagic, (u8 *)dmaL2Cache);
     }
     if (ack_seen("{\"status\""))

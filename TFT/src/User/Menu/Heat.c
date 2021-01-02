@@ -311,7 +311,9 @@ void updateNextHeatCheckTimeOut(void)
 {
   nextHeatCheckTimeout = OS_GetTimeMs() + (update_time * 3);
 }
-
+/*********************************************/
+/* Helper function to show comunication Flags*/
+/*********************************************/
 void showDebugInfo(void)
 {
   if (update_waiting == true)
@@ -335,8 +337,11 @@ void showDebugInfo(void)
     GUI_SetColor(BLUE);
   GUI_FillRect(LCD_WIDTH - 20, 0, LCD_WIDTH - 15, 5);
 
-  GUI_SetColor(WHITE);
+  GUI_SetColor(FONT_COLOR);
 }
+/*********************************************/
+/* lopp for ask frequetly th temperature     */
+/*********************************************/
 void loopCheckHeater(void)
 {
   do

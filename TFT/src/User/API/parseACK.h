@@ -5,6 +5,7 @@
 #include "Configuration.h"
 
 static const char errormagic[] = "Error:";
+static const char warningmagic[] = "Warning:";
 static const char echomagic[] = "echo:";
 static const char unknowmagic[] = "Unknown command:";
 

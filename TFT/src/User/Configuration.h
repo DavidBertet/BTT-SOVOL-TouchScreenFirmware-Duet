@@ -44,8 +44,8 @@
  *              7: LCD_DIM_300_SECONDS, 8: LCD_DIM_CUSTOM_SECONDS
  *
  */
-#define DEFAULT_LCD_BRIGHTNESS 11      // 11: LCD_100_PERCENT - Brightness value from list
-#define DEFAULT_LCD_IDLE_BRIGHTNESS 11 // 2: LCD_10_PERCENT - Brightness value from list
+#define DEFAULT_LCD_BRIGHTNESS 10      // 11: LCD_100_PERCENT - Brightness value from list
+#define DEFAULT_LCD_IDLE_BRIGHTNESS 10 // 2: LCD_10_PERCENT - Brightness value from list
 #define DEFAULT_LCD_IDLE_TIMER 1       // 1: LCD_DIM_OFF
 #define LCD_DIM_CUSTOM_SECONDS 600     // Custom value in seconds. Will be used if \
                                       // LCD_DIM_CUSTOM_SECONDS is set as idle timer.
@@ -371,9 +371,12 @@
 #define PRINT_CANCEL_GCODE "G28 XY R10\n" // Home XY and raise Z 10mm
 
 // How Often the Temerature will read
-#define TEMPERATURE_QUERY_DEFAULT_DURATION 2000 // 2s
+#define TEMPERATURE_QUERY_DEFAULT_DURATION 1000 // 1s
 
-// ThRo42 Debug switch
-#define THRO42_DEBUG
+// ThRo42 (my) Debug switch
+// #define THRO42_DEBUG
+
+// Watchdoc timeout
+#define WATCHDOC_TIMEOUT 3000 // should be about 1/256s * 3000 should be about 20s
 
 #endif

@@ -6,8 +6,12 @@
 You can find an installation video in German on [Youtube](https://youtu.be/RYbedIfLLbQ)
 
 ## Stabilizing
-For stabilizing the firmware, I changed acces to the RepRapFirmware filesystem.
+For stabilizing the firmware, I changed folowing parts:
+  - changed acces to the RepRapFirmware filesystem.
+  - Menu print work now stable
+  - implement a timeout for temerature status
 
 ## Optimizing
-I changed the Custom menu to "Macros". So I yan list the Macros and start them from the display.
-
+  - I changed the Custom menu to "Macros". So I yan list the Macros and start them from the display.
+  - Implement a watchdoc. Display restart after 20s hangup
+  - Display Errors and Warnings on Statusscreen

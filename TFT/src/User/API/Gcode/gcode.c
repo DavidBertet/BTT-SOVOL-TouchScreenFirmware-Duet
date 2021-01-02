@@ -76,23 +76,6 @@ char *request_M20(char *nextdir)
     sprintf(requestCommandInfo.command, "M20 S2 P\"/gcodes/%s\"\n\n", nextdir);
   }
   send_and_wait_M20();
-  /*
-  resetRequestCommandInfo();
-  mustStoreCmd(requestCommandInfo.command);
-  // Wait for response
-  WaitingGcodeResponse = 1;
-  while ((!requestCommandInfo.done) && (timeout > 0x00))
-  {
-    loopProcess();
-    timeout--;
-  }
-  WaitingGcodeResponse = 0;
-  if (timeout <= 0x00)
-  {
-    clearRequestCommandInfo();
-  }
-  //clearRequestCommandInfo(); //shall be call after copying the buffer ...
-  */
   infoHost.pauseGantry = false;
   return requestCommandInfo.cmd_rev_buf;
 }
@@ -176,7 +159,7 @@ bool request_M25(void)
   mustStoreCmd("M25\n");
   return true;
 }
-
+/* help function for cleanup serial port*/
 void waitPortReady(void)
 {
   TCHAR command[30];
@@ -193,7 +176,7 @@ void waitPortReady(void)
 }
 char *request_M20_macros(char *nextdir)
 {
-  // uint32_t timeout = ((uint32_t)0x000FFFFF);
+  // set pause Flag
   infoHost.pauseGantry = true;
   // waitPortReady();
   clearRequestCommandInfo();
@@ -205,44 +188,9 @@ char *request_M20_macros(char *nextdir)
   {
     sprintf(requestCommandInfo.command, "M20 S2 P\"/macros/\"%s\n\n", nextdir);
   }
+  // Send GCode and wait for responce
   send_and_wait_M20();
-  /*
-  resetRequestCommandInfo();
-  mustStoreCmd(requestCommandInfo.command);
-  while (strstr(requestCommandInfo.cmd_rev_buf, "dir") == NULL) //(!find_part("dir"))
-  {
-    timeout = ((uint32_t)0x0000FFFF);
-    WaitingGcodeResponse = 1;
-    while ((!requestCommandInfo.done) && (timeout > 0x00))
-    {
-      loopBackEnd();
-      timeout--;
-    }
-    WaitingGcodeResponse = 0;
-    if (timeout <= 0x00)
-    {
-      uint16_t wIndex = (dmaL1Data[SERIAL_PORT].wIndex == 0) ? DMA_TRANS_LEN : dmaL1Data[SERIAL_PORT].wIndex;
-      if (dmaL1Data[SERIAL_PORT].cache[wIndex - 1] == '}') // \n fehlt
-      {
-        BUZZER_PLAY(sound_notify); // for DEBUG
-        dmaL1Data[SERIAL_PORT].cache[wIndex] = '\n';
-        dmaL1Data[SERIAL_PORT].cache[wIndex + 1] = 0;
-        dmaL1Data[SERIAL_PORT].wIndex++;
-        infoHost.rx_ok[SERIAL_PORT] = true;
-      }
-    }
-    if (dmaL1NotEmpty(SERIAL_PORT) && !infoHost.rx_ok[SERIAL_PORT])
-    {
-      infoHost.rx_ok[SERIAL_PORT] = true;
-    }
-    if (strstr(requestCommandInfo.cmd_rev_buf, "dir") == NULL)
-    {
-      clearRequestCommandInfo();
-      resetRequestCommandInfo();
-      mustStoreCmd("\n");
-    }
-  }
-  */
+  // reset pause Flag
   infoHost.pauseGantry = false;
   GUI_Clear(BACKGROUND_COLOR);
   return requestCommandInfo.cmd_rev_buf;
