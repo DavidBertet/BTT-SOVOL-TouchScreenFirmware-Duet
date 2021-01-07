@@ -1,8 +1,16 @@
 #ifndef _BABYSTEP_H_
 #define _BABYSTEP_H_
 
-void menuBabyStep(void);
-void setBabyStep(float babystep);
-void babyStepReset(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void babyReset(void);
+
+void menuBabystep(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

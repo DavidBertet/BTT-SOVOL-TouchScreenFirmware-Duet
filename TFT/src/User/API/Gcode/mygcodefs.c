@@ -1,6 +1,21 @@
 #include "mygcodefs.h"
 #include "includes.h"
 
+/*
+*/
+bool mountGcodeSDCard(void)
+{
+  // Send M21 ( Init SD )
+  // wait result
+  // return 0=Error 1=OK
+  /*
+>>> M21
+SENDING:M21
+echo:SD card ok
+*/
+  return request_M21();
+}
+
 //static uint32_t date=0;
 //static FILINFO  finfo;
 //static uint16_t len = 0;
@@ -31,9 +46,9 @@ bool scanPrintFilesGcodeFs(char *nextdir)
 
   strcpy(s, ",");
 
-  data = strtok (data ,"]"); // обрезаем конец
+  data = strtok(data, "]"); // обрезаем конец
 
-  char *line = strtok(strchr(data ,'files":[')+1, s);
+  char *line = strtok(strchr(data, 'files":[') + 1, s);
   for (;line != NULL;line = strtok(NULL, s))
   {
     char *pline = line + 1;
@@ -44,6 +59,8 @@ bool scanPrintFilesGcodeFs(char *nextdir)
       if (infoFile.f_num >= FILE_NUM)
         continue; /* Gcode max number is FILE_NUM*/
 
+/* TODO DAVID: MERGE_TO_BE_FIXED
+< HEAD
       char * Pstr_tmp = strrchr (line,'"');
       if (Pstr_tmp != NULL) *Pstr_tmp = 0; //remove правую ковычку
       Pstr_tmp = strrchr (line ,'"'); //remove начальная ковычка
@@ -57,7 +74,48 @@ bool scanPrintFilesGcodeFs(char *nextdir)
       // }
       strcpy(infoFile.Longfile[infoFile.f_num], Pstr_tmp);
       // clearRequestCommandInfo();  // for M33
+=======
+      if (infoMachineSettings.long_filename_support == ENABLED)
+      {
+        char *Pstr_tmp = strrchr(line, ' ');
+        if (Pstr_tmp != NULL)
+          *Pstr_tmp = 0;
+        //remove file size from line
+        char *longfilename;
+        if (strrchr(line, '~') != NULL)                   //check if file name is 8.3 format
+          longfilename = request_M33(line);
+        else
+          longfilename = line;
 
+        /*
+          When AUTO_REPORT_TEMPERATURES is enabled by M155, The response of M33 may become the following
+            SENDING: M33 /1A29A~1.GCO
+            T:29.43 /0.00 B:27.95 /0.00 @:0 B@:0
+            /1.gcode
+            ok
+          So the longfilename will be parsed "0.00 @:0 B@:0" instead of "1.gcode" if the truncated character is '\n' not string "\nok"
+        * /
+        Pstr_tmp = strstr(longfilename, "\nok");
+        if (Pstr_tmp != NULL)
+          *Pstr_tmp = 0;                          //remove end of M33 command
+
+        Pstr_tmp = strrchr(longfilename, '/');    //remove folder information
+        if (Pstr_tmp == NULL)
+          Pstr_tmp = longfilename;
+        else
+          Pstr_tmp++;
+
+        infoFile.Longfile[infoFile.f_num] = malloc(strlen(Pstr_tmp) + 1);
+
+        if (infoFile.Longfile[infoFile.f_num] == NULL)
+        {
+          clearRequestCommandInfo();
+          break;
+        }
+        strcpy(infoFile.Longfile[infoFile.f_num], Pstr_tmp);
+        clearRequestCommandInfo(); // for M33
+      }
+*/
       infoFile.file[infoFile.f_num] = malloc(strlen(pline) + 1);
       if (infoFile.file[infoFile.f_num] == NULL) break;
       strcpy(infoFile.file[infoFile.f_num++], pline);

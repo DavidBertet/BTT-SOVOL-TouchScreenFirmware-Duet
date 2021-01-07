@@ -4,6 +4,7 @@
 #include "stdbool.h"
 #include "gcode.h"
 
+bool mountGcodeSDCard(void);
 bool scanPrintFilesGcodeFs(char *dir);
 
 #endif

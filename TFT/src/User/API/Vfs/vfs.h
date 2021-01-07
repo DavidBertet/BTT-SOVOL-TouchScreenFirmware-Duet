@@ -29,6 +29,7 @@ typedef struct
 
 extern MYFILE  infoFile;
 
+bool mountFS(void);
 bool scanPrintFiles(void);
 
 TCHAR* getCurFileSource(void);

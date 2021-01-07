@@ -1,6 +1,6 @@
-#include "LCD_Encoder.h"
 #include "GPIO_Init.h"
 #include "includes.h"
+#include "LCD_Encoder.h"
 
 #if LCD_ENCODER_SUPPORT
 
@@ -20,6 +20,19 @@ void HW_EncoderInit(void)
   }
   _encLastBtn= encoder_GetPos();
 }
+
+#if ENC_ACTIVE_SIGNAL
+  void HW_EncActiveSignalInit(void)
+  {
+    GPIO_InitSet(LCD_ENC_EN_PIN, MGPIO_MODE_OUT_PP, 0);
+    setEncActiveSignal(0);
+  }
+
+  void setEncActiveSignal(uint8_t status)
+  {
+    GPIO_SetLevel(LCD_ENC_EN_PIN, status);
+  }
+#endif
 
 bool encoder_ReadStep(uint16_t io_pin)
 {
@@ -100,7 +113,8 @@ void loopCheckEncoderSteps(void)
   #define encrot3 1
 
   // Manage encoder rotation
-  #define ENCODER_SPIN(_E1, _E2) switch (lastEncoderBits) { case _E1: encoderDiff += encoderDirection; break; case _E2: encoderDiff -= encoderDirection; }
+  #define ENCODER_SPIN(_E1, _E2) switch (lastEncoderBits) { case _E1: encoderDiff += encoderDirection; break; \
+                                                            case _E2: encoderDiff -= encoderDirection; }
 
   if (buttons != lastEncoderBits)
   {
@@ -123,32 +137,16 @@ void loopCheckEncoderSteps(void)
   }
 }
 
-void loopCheckEncoder()
-{
-  #ifdef LCD_LED_PWM_CHANNEL
-    // Check for any encoder changes or Check for encoder button press
-    if (encoder_CheckState() || encoder_ReadBtn(LCD_BUTTON_INTERVALS))
-      LCD_Dim_Idle_Timer_Reset(); // Reset LCD dim idle timer if enabled.
-  #endif
-
-  if (isPrinting() || skipMode)
-    return;
-
-  if (encoder_ReadBtn(LCD_CHANGE_MODE_INTERVALS))
-    infoMenu.menu[++infoMenu.cur] = menuMode;
-}
-
-
 #if 1
 //Parse the touch to control encoder
  uint8_t LCD_ReadTouch(void)
 {
-	u16 ex=0,ey=0;
+  u16 ex=0,ey=0;
   static u32 CTime = 0;
   static u16 sy;
-	static bool MOVE = false;
+  static bool MOVE = false;
 
-	if(!XPT2046_Read_Pen() && CTime < OS_GetTimeMs())
+  if(!XPT2046_Read_Pen() && CTime < OS_GetTimeMs())
   {
     TS_Get_Coordinates(&ex, &ey);
     if (!MOVE)
@@ -169,7 +167,7 @@ void loopCheckEncoder()
           sy = ey;
           return 2;
         }
-        return 0;
+        //return 0;
       }
       else
       {
@@ -178,18 +176,19 @@ void loopCheckEncoder()
           sy = ey;
           return 3;
         }
-        return 0;
+        //return 0;
       }
     }
   }
   else
-	{
-		CTime = OS_GetTimeMs();
-		sy = ey =0;
-		MOVE = false;
+  {
+    CTime = OS_GetTimeMs();
+    sy = ey =0;
+    MOVE = false;
     skipMode = false; //resume mode change loop
-    return 0;
-	}
+    //return 0;
+  }
+  return 0;
 }
 #endif
 
@@ -198,51 +197,52 @@ void sendEncoder(uint8_t num)
 {
   if(num==1 || num==2 || num ==3)
   {
-  GPIO_InitSet(LCD_BTN_PIN, MGPIO_MODE_OUT_PP, 0);
-	GPIO_InitSet(LCD_ENCA_PIN, MGPIO_MODE_OUT_PP, 0);
-	GPIO_InitSet(LCD_ENCB_PIN, MGPIO_MODE_OUT_PP, 0);
+    GPIO_InitSet(LCD_BTN_PIN, MGPIO_MODE_OUT_PP, 0);
+    GPIO_InitSet(LCD_ENCA_PIN, MGPIO_MODE_OUT_PP, 0);
+    GPIO_InitSet(LCD_ENCB_PIN, MGPIO_MODE_OUT_PP, 0);
   }
-	switch(num)
-	{
-		case 0:
-			break;
-		case 1:
-			GPIO_SetLevel(LCD_BTN_PIN, 0);
-			GPIO_SetLevel(LCD_BTN_PIN, 1);
-			break;
-		case 2:
-			GPIO_SetLevel(LCD_ENCA_PIN, 1);
-			GPIO_SetLevel(LCD_ENCB_PIN, 1);
-			Delay_us(8);
-			GPIO_SetLevel(LCD_ENCA_PIN, 0);
-			GPIO_SetLevel(LCD_ENCB_PIN, 1);
-			Delay_us(8);
-			GPIO_SetLevel(LCD_ENCA_PIN, 0);
-			GPIO_SetLevel(LCD_ENCB_PIN, 0);
-			Delay_us(8);
-			GPIO_SetLevel(LCD_ENCA_PIN, 1);
-			GPIO_SetLevel(LCD_ENCB_PIN, 0);
-			Delay_us(8);
-			GPIO_SetLevel(LCD_ENCA_PIN, 1);
-			GPIO_SetLevel(LCD_ENCB_PIN, 1);
-			break;
-		case 3:
-			GPIO_SetLevel(LCD_ENCA_PIN, 1);
-			GPIO_SetLevel(LCD_ENCB_PIN, 1);
-			Delay_us(8);
-			GPIO_SetLevel(LCD_ENCA_PIN, 1);
-			GPIO_SetLevel(LCD_ENCB_PIN, 0);
-			Delay_us(8);
-			GPIO_SetLevel(LCD_ENCA_PIN, 0);
-			GPIO_SetLevel(LCD_ENCB_PIN, 0);
-			Delay_us(8);
-			GPIO_SetLevel(LCD_ENCA_PIN, 0);
-			GPIO_SetLevel(LCD_ENCB_PIN, 1);
-			Delay_us(8);
-			GPIO_SetLevel(LCD_ENCA_PIN, 1);
-			GPIO_SetLevel(LCD_ENCB_PIN, 1);
-			break;
-	}
+  switch(num)
+  {
+    case 0:
+      break;
+    case 1:
+      GPIO_SetLevel(LCD_BTN_PIN, 0);
+      Delay_us(LCD_ENCODER_DELAY);
+      GPIO_SetLevel(LCD_BTN_PIN, 1);
+      break;
+    case 2:
+      GPIO_SetLevel(LCD_ENCA_PIN, 1);
+      GPIO_SetLevel(LCD_ENCB_PIN, 1);
+      Delay_us(LCD_ENCODER_DELAY);
+      GPIO_SetLevel(LCD_ENCA_PIN, 0);
+      GPIO_SetLevel(LCD_ENCB_PIN, 1);
+      Delay_us(LCD_ENCODER_DELAY);
+      GPIO_SetLevel(LCD_ENCA_PIN, 0);
+      GPIO_SetLevel(LCD_ENCB_PIN, 0);
+      Delay_us(LCD_ENCODER_DELAY);
+      GPIO_SetLevel(LCD_ENCA_PIN, 1);
+      GPIO_SetLevel(LCD_ENCB_PIN, 0);
+      Delay_us(LCD_ENCODER_DELAY);
+      GPIO_SetLevel(LCD_ENCA_PIN, 1);
+      GPIO_SetLevel(LCD_ENCB_PIN, 1);
+      break;
+    case 3:
+      GPIO_SetLevel(LCD_ENCA_PIN, 1);
+      GPIO_SetLevel(LCD_ENCB_PIN, 1);
+      Delay_us(LCD_ENCODER_DELAY);
+      GPIO_SetLevel(LCD_ENCA_PIN, 1);
+      GPIO_SetLevel(LCD_ENCB_PIN, 0);
+      Delay_us(LCD_ENCODER_DELAY);
+      GPIO_SetLevel(LCD_ENCA_PIN, 0);
+      GPIO_SetLevel(LCD_ENCB_PIN, 0);
+      Delay_us(LCD_ENCODER_DELAY);
+      GPIO_SetLevel(LCD_ENCA_PIN, 0);
+      GPIO_SetLevel(LCD_ENCB_PIN, 1);
+      Delay_us(LCD_ENCODER_DELAY);
+      GPIO_SetLevel(LCD_ENCA_PIN, 1);
+      GPIO_SetLevel(LCD_ENCB_PIN, 1);
+      break;
+  }
 
   HW_EncoderInit();
 }

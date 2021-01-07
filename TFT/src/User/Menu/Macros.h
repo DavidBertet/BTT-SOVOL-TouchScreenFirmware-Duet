@@ -3,5 +3,6 @@
 #define _MACROS_H_
 
 void menuCallMacro(void);
+void macroListDraw(void);
 
 #endif

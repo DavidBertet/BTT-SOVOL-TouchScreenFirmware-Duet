@@ -206,10 +206,11 @@ void menuExecMacro(void)
 {
   u16 key_num = IDLE_TOUCH;
 
-  char buf[89];
-  sprintf(buf, "Do you want to start %.65s?\n", macroFile.title);
+  char message[89];
+  sprintf(message, "Do you want to start %.65s?\n", macroFile.title);
 
-  popupDrawPage(bottomDoubleBtn, textSelect(LABEL_INFO), (u8 *)buf, textSelect(LABEL_CONFIRM), textSelect(LABEL_CANNEL));
+  popupDrawPage(DIALOG_TYPE_QUESTION, bottomDoubleBtn, textSelect(LABEL_INFO), (u8 *)message,
+                textSelect(LABEL_CONFIRM), textSelect(LABEL_CANCEL));
 
   while (infoMenu.menu[infoMenu.cur] == menuExecMacro)
   {

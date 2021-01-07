@@ -19,7 +19,7 @@
   #define LCD_WR_DATA(data)  do{ LCD->LCD_RAM = data; }while(0)
 
 #else
-  #if defined(MKS_32_V1_4)
+  #if defined(MKS_32_V1_4) || defined (MKS_28_V1_0)
   /*
   #define LCD_WR PB14
   #define LCD_RS PD13
@@ -63,21 +63,6 @@
   void LCD_WR_DATA(uint16_t data);
 
 #endif
-
-// Color Definition
-
-#define WHITE                 0xFFFF
-#define BLACK                 0x0000
-#define BLUE                  0x001F
-#define GBLUE                 0X07FF
-#define RED                   0xF800
-#define MAGENTA               0xF81F
-#define GREEN                 0x07E0
-#define CYAN                  0x7FFF
-#define YELLOW                0xFFE0
-#define BROWN                 0XBC40
-#define BRRED                 0XFC07
-#define GRAY                  0X8430
 
 void LCD_HardwareConfig(void);
 uint16_t LCD_RD_DATA(void);
